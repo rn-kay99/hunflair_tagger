@@ -22,19 +22,11 @@ corpora=$1
 model_type=$2
 
 # Generate a random 4-digit ID that is used for unique model name and random seed
-# id=$(printf "%04d" $(( RANDOM % 10000 )))
-id=1234
+id=$(printf "%04d" $(( RANDOM % 10000 )))
 
 # If the "fine_grained_biolinkbert" is selected, the corpora will be set to the fine grained variant of the corpora.
 if [ "$model_type" == "fine_grained_biolinkbert" ]; then
-    if [ "$corpora" == "biored" ]; then
-        corpora="fine_grained_biored"
-    elif [ "$corpora" == "tmvar3" ]; then
-        corpora="fine_grained_tmvar3"
-        echo "TEST"
-    elif [ "$corpora" == "osiris" ]; then
-        corpora="fine_grained_osiris"
-    fi
+    corpora="fine_grained_$corpora"
 fi
 
 # Copy the fine-grained versions of the corpora into the directory where Flair expects them
@@ -66,7 +58,7 @@ elif [ "$model_type" == "fine_grained_biolinkbert" ]; then
     echo "Deleting old prediction files..."
     rm -f /vol/fob-vol4/mi17/steinkay/.flair/datasets/${corpora}/{training.log,train.conll,test.conll,loss.tsv,final-model.pt,dev.tsv,best-model.pt}
     echo "Training of the Fine-Grained BioLinkBERT starts..."
-    python hunflair-v2-experiments-main/train_ner_gs_model.py --type fine_grained_variation --path models/${corpora}_${id} --transformer_word_embedding "michiyasunaga/BioLinkBERT-base" --train_corpora ${corpora} --test_corpora ${corpora} --batch_size 16 --learning_rate 2.0e-6 --max_epochs 200 --seed ${id} > $output_subdir/train.log
+    python hunflair-v2-experiments-main/train_ner_gs_model.py --type fine_grained_variation --path models/${corpora}_${id} --transformer_word_embedding "michiyasunaga/BioLinkBERT-base" --train_corpora ${corpora} --test_corpora ${corpora} --batch_size 16 --learning_rate 2.0e-5 --max_epochs 200 --seed ${id} > $output_subdir/train.log
 else
     echo Invalid model selection. Select "bilstm_crf", "biolinkbert" or "fine_grained_biolinkbert".
     exit 1
@@ -75,6 +67,12 @@ echo "Training completed. Log file is located in $output_subdir/train.log"
 
 best_model_file="$HOME/.flair/datasets/${corpora}/best-model.pt"
 final_model_file="$HOME/.flair/datasets/${corpora}/final-model.pt"
+if [ "$model_type" == "bilstm_crf" ] || [ "$model_type" == "biolinkbert" ]; then
+    corpora="bigbio-$corpora"
+    best_model_file="$HOME/.flair/datasets/${corpora}/SciSpacySentenceSplitter_core_sci_sm_0.5.1_SciSpacyTokenizer_core_sci_sm_0.5.1/best-model.pt"
+    final_model_file="$HOME/.flair/datasets/${corpora}/SciSpacySentenceSplitter_core_sci_sm_0.5.1_SciSpacyTokenizer_core_sci_sm_0.5.1/final-model.pt"
+fi
+
 if [ -f "$best_model_file" ]; then
     mv "$best_model_file" "$output_subdir/"
 fi

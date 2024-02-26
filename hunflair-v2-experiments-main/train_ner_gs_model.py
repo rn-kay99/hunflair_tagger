@@ -104,7 +104,7 @@ def train_on_dataset(
             hidden_size=256,
             embeddings=embeddings,
             tag_dictionary=tag_dictionary,
-            tag_format="BIOES",
+            tag_format="BIO",
             tag_type="ner",
             use_crf=True,
             locked_dropout=0.5,
@@ -112,7 +112,6 @@ def train_on_dataset(
 
         trainer: ModelTrainer = ModelTrainer(tagger, corpus)
         base_path = os.path.join(results_path, corpus.name.lower())
-        print(f"BASEPATH: {base_path}")
 
         trainer.train(
             base_path=base_path,
@@ -147,7 +146,7 @@ def train_on_dataset(
             hidden_size=256,
             embeddings=embeddings,
             tag_dictionary=tag_dictionary,
-            tag_format="BIOES",
+            tag_format="BIO",
             tag_type="ner",
             use_crf=False,
             use_rnn=False,
@@ -156,7 +155,6 @@ def train_on_dataset(
 
         trainer: ModelTrainer = ModelTrainer(tagger, corpus)
         base_path = os.path.join(results_path, corpus.name.lower())
-        print(f"BASEPATH: {base_path}")
 
         trainer.train(
             base_path=base_path,
@@ -197,7 +195,7 @@ def train_on_dataset(
                 hidden_size=256,
                 embeddings=embeddings,
                 tag_dictionary=tag_dictionary,
-                tag_format="BIOES",
+                tag_format="BIO",
                 tag_type="ner",
                 use_crf=transformers_use_crf,
                 use_rnn=False,
@@ -208,7 +206,7 @@ def train_on_dataset(
                 hidden_size=256,
                 embeddings=embeddings,
                 tag_dictionary=tag_dictionary,
-                tag_format="BIOES",
+                tag_format="BIO",
                 tag_type="ner",
                 use_crf=transformers_use_crf,
                 use_rnn=False,
@@ -226,8 +224,6 @@ def train_on_dataset(
             base_path = os.path.join(results_path)
         else:
             base_path = os.path.join(results_path, corpus.name.lower())
-
-        print(f"BASEPATH: {base_path}")
 
         # Debug training
         main_evaluation_metric = ("micro avg", "f1-score")
