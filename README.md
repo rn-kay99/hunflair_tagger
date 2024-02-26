@@ -66,8 +66,10 @@ The `train.json` and `test.json` files within each corpus contain data for train
 
 ## Utils
 The `/utils` directory contains Python scripts and helper functions specifically designed to process the corpus and prepare the data for training the NER model. Here are the main components:
-- `fine_grained_corpus_parser.py`: This script takes an annotated corpus as input and uses regular expressions to parse the corpus, extracting fine-grained annotations.
-- `merge_fine_grained_entities.py`: The script merges the fine-grained entities. 
+- `fine_grained_corpus_parser.py`: This script takes an annotated corpus as input and uses regular expressions to parse the corpus, extracting fine-grained annotations. Used to create the fine-grained versions of the corpora specified in `/data`.
+- `merge_fine_grained_entities.py`: This script merges the fine-grained entities.
+- `clean_prediction.py`: Removes empty annotations.
+- `evaluate_prediction.py`: Evaluates a model prediction with the gold file.
 
 ## Results
 The models BILSTM-CRF, BioLinkBERT and fine-grained BioLinkBERT were trained and tested on the three corpora, with the following results.

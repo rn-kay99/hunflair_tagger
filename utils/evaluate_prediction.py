@@ -1,6 +1,6 @@
 """
 The code in this file is used to evaluate the predictions of the BiLSTM-CRF, BioLinkBERT and Fine-Grained-BioLinkBERT models.
-Example call: python make_prediction.py --pred_file ../../test_my_modell_prediction/bilstm/osiris_7733/pred.txt --gold_file osiris/mod_osiris_test.txt > ../../test_my_modell_prediction/bilstm/osiris_7733/pred.log
+Example call: python evaluate_prediction.py --pred_file models/bilstm/osiris_7733/pred.txt --gold_file data/osiris/mod_osiris_test.txt > models/bilstm/osiris_7733/eval.txt
 The result includes precision, recall and F1 score.
 """
 import argparse
@@ -9,7 +9,7 @@ pred_entities = []
 gold_entities = []
 annotations = []
 
-def evaluate_with_duplicate(prediction, gold):
+def evaluate(prediction, gold):
     prediction = [elem.strip() for elem in prediction]
     gold_copy = [elem.strip() for elem in gold]  # Kopie der Gold-Liste für Vergleich
 
@@ -36,31 +36,13 @@ def evaluate_with_duplicate(prediction, gold):
 
     return tp, fp, fn
 
-
-def evaluate(prediction, gold):
-    prediction = [elem.strip() for elem in prediction]
-    gold = [elem.strip() for elem in gold]
-    
-    tp = len(set(prediction) & set(gold))
-    fp = len(set(prediction) - set(gold))
-    fn = len(set(gold) - set(prediction))
-
-    if len(prediction) > 0 or len(gold) > 0:
-        print("pred: ",prediction)
-        print("gold: ",gold)
-        print("tp: ", tp)
-        print("fp: ", fp)
-        print("fn: ", fn)
-        print()
-    return tp, fp, fn
-
 def evaluate_all(predictions, golds):
     true_positive = 0
     false_positive = 0
     false_negative = 0
 
     for prediction, gold in zip(predictions, golds):
-        tp, fp, fn = evaluate_with_duplicate(prediction, gold)
+        tp, fp, fn = evaluate(prediction, gold)
         true_positive += tp
         false_positive += fp
         false_negative += fn

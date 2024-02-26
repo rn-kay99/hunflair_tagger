@@ -26,7 +26,9 @@ id=$(printf "%04d" $(( RANDOM % 10000 )))
 
 # If the "fine_grained_biolinkbert" is selected, the corpora will be set to the fine grained variant of the corpora.
 if [ "$model_type" == "fine_grained_biolinkbert" ]; then
-    corpora="fine_grained_$corpora"
+    corpora_saving_name="fine_grained_$corpora"
+else
+    corpora_saving_name="bigbio-$corpora"
 fi
 
 # Copy the fine-grained versions of the corpora into the directory where Flair expects them
@@ -56,21 +58,21 @@ elif [ "$model_type" == "biolinkbert" ]; then
     python hunflair-v2-experiments-main/train_ner_gs_model.py --type variation --path models/${corpora}_${id} --transformer_word_embedding "michiyasunaga/BioLinkBERT-base" --train_corpora ${corpora} --test_corpora --batch_size 16 --learning_rate 2.0e-5 --max_epochs 200 --seed ${id} > $output_subdir/train.log
 elif [ "$model_type" == "fine_grained_biolinkbert" ]; then
     echo "Deleting old prediction files..."
-    rm -f /vol/fob-vol4/mi17/steinkay/.flair/datasets/${corpora}/{training.log,train.conll,test.conll,loss.tsv,final-model.pt,dev.tsv,best-model.pt}
+    rm -f $HOME/.flair/datasets/${corpora_saving_name}/{training.log,train.conll,test.conll,loss.tsv,final-model.pt,dev.tsv,best-model.pt}
     echo "Training of the Fine-Grained BioLinkBERT starts..."
-    python hunflair-v2-experiments-main/train_ner_gs_model.py --type fine_grained_variation --path models/${corpora}_${id} --transformer_word_embedding "michiyasunaga/BioLinkBERT-base" --train_corpora ${corpora} --test_corpora ${corpora} --batch_size 16 --learning_rate 2.0e-5 --max_epochs 200 --seed ${id} > $output_subdir/train.log
+    python hunflair-v2-experiments-main/train_ner_gs_model.py --type fine_grained_variation --path models/${corpora}_${id} --transformer_word_embedding "michiyasunaga/BioLinkBERT-base" --train_corpora ${corpora_saving_name} --test_corpora ${corpora_saving_name} --batch_size 16 --learning_rate 2.0e-5 --max_epochs 200 --seed ${id} > $output_subdir/train.log
 else
     echo Invalid model selection. Select "bilstm_crf", "biolinkbert" or "fine_grained_biolinkbert".
     exit 1
 fi
-echo "Training completed. Log file is located in $output_subdir/train.log"
+echo "Training completed."
 
-best_model_file="$HOME/.flair/datasets/${corpora}/best-model.pt"
-final_model_file="$HOME/.flair/datasets/${corpora}/final-model.pt"
+# copy best-model and final-model into output directory
+best_model_file="$HOME/.flair/datasets/${corpora_saving_name}/best-model.pt"
+final_model_file="$HOME/.flair/datasets/${corpora_saving_name}/final-model.pt"
 if [ "$model_type" == "bilstm_crf" ] || [ "$model_type" == "biolinkbert" ]; then
-    corpora="bigbio-$corpora"
-    best_model_file="$HOME/.flair/datasets/${corpora}/SciSpacySentenceSplitter_core_sci_sm_0.5.1_SciSpacyTokenizer_core_sci_sm_0.5.1/best-model.pt"
-    final_model_file="$HOME/.flair/datasets/${corpora}/SciSpacySentenceSplitter_core_sci_sm_0.5.1_SciSpacyTokenizer_core_sci_sm_0.5.1/final-model.pt"
+    best_model_file="$HOME/.flair/datasets/${corpora_saving_name}/scispacysentencesplitter_core_sci_sm_0.5.1_scispacytokenizer_core_sci_sm_0.5.1/best-model.pt"
+    final_model_file="$HOME/.flair/datasets/${corpora_saving_name}/scispacysentencesplitter_core_sci_sm_0.5.1_scispacytokenizer_core_sci_sm_0.5.1/final-model.pt"
 fi
 
 if [ -f "$best_model_file" ]; then
@@ -83,4 +85,15 @@ fi
 # Make prediction
 echo "Prediction with the model starts..."
 python hunflair-v2-experiments-main/predict_hunflair_v2.py --single --input_dataset ${corpora} --model models/${model_type}/${corpora}_${id}/best-model.pt --output_file $output_subdir/pred.txt > $output_subdir/pred.log
-echo "Prediction completed. Log file is located in $output_subdir/predict.log"
+python utils/clean_prediction.py --pred_file  models/${model_type}/${corpora}_${id}/pred.txt --output_file models/${model_type}/${corpora}_${id}/tmp_pred.txt
+mv models/${model_type}/${corpora}_${id}/tmp_pred.txt models/${model_type}/${corpora}_${id}/pred.txt
+if [ "$model_type" == "fine_grained_biolinkbert" ]; then
+    python utils/merge_fine_grained_entities.py --input_file models/${model_type}/${corpora}_${id}/pred.txt --output_file models/${model_type}/${corpora}_${id}/tmp_pred.txt
+    mv models/${model_type}/${corpora}_${id}/tmp_pred.txt models/${model_type}/${corpora}_${id}/pred.txt
+fi
+echo "Prediction completed."
+
+# Evaluate model prediction
+echo "Evaluation of the prediction starts..."
+python utils/evaluate_prediction.py --pred_file models/${model_type}/${corpora}_${id}/pred.txt --gold_file data/${corpora}/mod_${corpora}_test.txt > models/${model_type}/${corpora}_${id}/eval.txt
+echo "Evaluation completed."
