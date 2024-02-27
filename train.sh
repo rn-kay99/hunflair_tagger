@@ -84,7 +84,7 @@ fi
 
 # Make prediction
 echo "Prediction with the model starts..."
-python hunflair-v2-experiments-main/predict_hunflair_v2.py --single --input_dataset ${corpora} --model models/${model_type}/${corpora}_${id}/best-model.pt --output_file $output_subdir/pred.txt > $output_subdir/pred.log
+python hunflair-v2-experiments-main/predict_hunflair_v2.py --single --input_dataset ${corpora} --model models/${model_type}/${corpora}_${id}/best-model.pt --output_file $output_subdir/pred.txt > /dev/null
 python utils/clean_prediction.py --pred_file  models/${model_type}/${corpora}_${id}/pred.txt --output_file models/${model_type}/${corpora}_${id}/tmp_pred.txt
 mv models/${model_type}/${corpora}_${id}/tmp_pred.txt models/${model_type}/${corpora}_${id}/pred.txt
 if [ "$model_type" == "fine_grained_biolinkbert" ]; then

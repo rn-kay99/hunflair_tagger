@@ -44,6 +44,18 @@ You can grant the necessary permissions by executing the following command in th
 ```bash
 chmod +x train.sh
 ```
+\
+After running the training script, the following files will be generated in the `/models` directory:
+- **best-model.pt**: This file contains the parameters of the best-performing model during training. It is the recommended model for use in predictions.
+
+- **final-model.pt**: Similar to `best-model.pt`, this file contains the parameters of the model at the last epoch of training.
+
+- **train.log**: This log file captures the details of the training process, including loss, metrics, and other relevant information.
+
+- **pred.txt**: This file contains the predictions made by the model.
+
+- **eval.txt**: This file is used for evaluating the prediction of a model against the gold standard.
+
 
 ## Flair
 The Flair library, which serves as the foundation for this project, is located in the `/hunflair-v2-experiments-main/flair` directory. \
