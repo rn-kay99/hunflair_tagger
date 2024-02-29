@@ -1,4 +1,3 @@
-import os
 import re
 import json
 from itertools import groupby
@@ -29,6 +28,7 @@ def parse_genetic_variants(file_name, output_file):
     NUC_RANGE = r'{}\s*(?:(\_)\s*{})?'.format(NUC_POS, NUC_POS)
     PROTEIN = r'(adenine|alanine|arginine|asparagine|aspartic acid|cytosine|cysteine|glutamate|glutamine|glutamic acid|glycine|guanine|histidine|isoleucine|leucine|lysine|methionine|phenylalanine|proline|serine|threonine|thymidine|tryptophan|tyrosine|valine|Ala|Arg|Asn|Asp|Cys|Gln|Glu|Gly|His|Ile|Leu|Lys|Met|Phe|Pro|Ser|Thr|Trp|Trp|Tyr|Val)'
 
+    # TODO: Merge regex patterns 3+5 and 1+6+7
     pattern1 = re.compile(r'^{}?\s*{}\s*{}?\s*{}?\s*{}*\s*{}?\s*{}?$'.format(REF, NUC_RANGE, SEP, NUC, OP, NUC, SEP))
     pattern2 = re.compile(r'^{}?\s*{}\s*{}?\s*{}?\s*{}?\s*{}\s*{}\s*{}?\s*{}?\s*{}?\s*$'.format(REF, NUC, SEP, NUC_POS, SEP, NUC_POS_OR_OP, NUC, OP, REF, NUC_POS))
     pattern3 = re.compile(r'^{}?\s*{}\s*{}?\s*{}?\s*{}?\s*{}?\s*{}?\s*{}?\s*{}?\b$'.format(P_REF, PROTEIN, NUC_POS_OR_SNP_ID, OP, PROTEIN, NUC_POS_OR_SNP_ID, FRAME_SHIFT_OR_OP, NUC_POS, PROTEIN))
@@ -152,7 +152,8 @@ def parse_genetic_variants(file_name, output_file):
                         pattern7_matches_num += 1
                         component_to_entity_type = []
                         component_to_entity_type = ["dna_rna_nucleotide", "mutation_type", "dna_rna_nucleotide", "mutation_component", "exon_intron", "mutation_unit", "mutation_component", "mutation_unit", "mutation_unit", "mutation_unit", "mutation_component", "mutation_component", "mutation_unit", "mutation_component", "mutation_unit", "mutation_unit", "mutation_unit", "mutation_component"]
-                        
+                        print("HELLLOOO")
+                        print(genetic_variant)
                         for idx, value in enumerate(match):
                             find_indices_and_append(start_index, genetic_variant, value, article, entity_data, component_to_entity_type[idx])
 
@@ -180,8 +181,7 @@ def parse_genetic_variants(file_name, output_file):
             print("pattern5 matches: ", pattern5_matches_num)
             print("pattern6 matches: ", pattern6_matches_num)
             print("pattern7 matches: ", pattern7_matches_num)
-            print("Coverage:", round(total_matches / corpus_size * 100, 2), "% , corpus size: ", corpus_size, "total_matches: ", total_matches)
-            print(pattern6.pattern)
+            print("Coverage:", round(total_matches / corpus_size * 100, 2), "% , Corpus size: ", corpus_size, ", Total matches: ", total_matches)
         
         with open(output_file, 'w') as output_file:
             json.dump(json_data, output_file, indent=4)
